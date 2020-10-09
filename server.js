@@ -2,27 +2,25 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const { json } = require("express");
-
+const { v4: uuidv4 } = require('uuid');
 // read json file and parse it
 let dbData = fs.readFileSync(path.join(__dirname, "/db/db.json"), "utf8");
-dbNotes = JSON.parse(dbData);
-console.log(dbNotes)
-// Sets up the Express Appvar app = express();
-const app= express()
+let dbNotes = JSON.parse(dbData);
+// Sets up the Express app = express();
+const app = express()
 // sets the port for heroku and local host
 let PORT = process.env.PORT || 3000;
 // Sets up the Express app to handle data parsing
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static("public"))
+app.use(express.static("public"));
 // Routes
 // =============================================================
 // route that sends the user to the notes page
 app.get("/notes", function(req, res) {
     res.sendFile(path.join(__dirname, "/public/notes.html"));
 });
-// route to eturn all saved notes from db.json
+// route to return all saved notes from db.json
 app.get("/api/notes", function(req, res) {
     res.send(dbNotes)
 });
@@ -33,20 +31,32 @@ app.get("*", function(req, res) {
 // route to receive a new note to save on the request body, 
 // add the note to db.json, and return to client on notes.html
 app.post("/api/notes", function(req, res) {
-  var note = req.body;
+  let note = req.body;
   dbNotes.push(note);
-  writeNotes = JSON.stringify(dbNotes)
+
+  dbNotes.map(function(note){
+    note.id = uuidv4();
+  })
+
+  let writeNotes = JSON.stringify(dbNotes)
   fs.writeFileSync(path.join(__dirname, "/db/db.json"), writeNotes)
   res.json(writeNotes)
 });
-// recieve a query parameter containing th id of a note to delete
-// TODO: give each note a unique ID WHEN IT IS SAVED
-// TODO: read all notes from the db.json file, and remove the note with the given id (splice by index?)
-// TODO: rewrite the notes to the db.json file that remain.
-app.delete("api/notes/:id", function(req, res){
-
+// route to delete selected note from user view and db.json
+app.delete("/api/notes/:id", function(req, res){
+    let id = req.params.id;
+    let deletedNote;
+// loop through notes db to find the note with id matching the note selected for deletion
+    for (let i = 0; i < dbNotes.length; i++){
+        if (dbNotes[i].id === id) {
+            deletedNote = dbNotes[i]
+            dbNotes.splice(i, 1);
+        } 
+    }
+// re-write the array to db.json to remove the deleted note
+    fs.writeFileSync(path.join(__dirname, "/db/db.json"), JSON.stringify(dbNotes))
+    res.send(deletedNote)
 })
-
 // Starts the server to begin listening
 // =============================================================
 app.listen(PORT, function() {
