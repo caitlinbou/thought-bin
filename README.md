@@ -15,7 +15,7 @@ This project is a note-taking tool with a server built using [npm Express](https
 ## Installation
 This project requires Node.js with the npm express package installed for creation or modification of the application.
 ## Usage 
-[THOUGH-BIN WEBSITE](https://secure-crag-93383.herokuapp.com/) 
+[THOUGH-BIN WEBSITE](https://thought-bin.herokuapp.com/) 
 
 When you launch the home page, there is a button to get started with taking notes. On the notes page, you write your note title and the body of the note, and click save. When you no longer need that note, you may delete it by clicking the trash button. You may view the body of the note by clicking on the title.
 ## License 
